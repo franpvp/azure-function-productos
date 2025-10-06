@@ -8,10 +8,10 @@ import com.microsoft.azure.functions.annotation.FunctionName;
 
 import java.util.logging.Logger;
 
-public class onProductoCreado {
-    @FunctionName("onProductoCreado")
+public class OnProductoCreado {
+    @FunctionName("OnProductoCreado")
     public void run(
-    @EventGridTrigger(name = "eventProductos") String content,
+    @EventGridTrigger(name = "eventProductoCreado") String content,
     final ExecutionContext context)
     {
         Logger logger = context.getLogger();
