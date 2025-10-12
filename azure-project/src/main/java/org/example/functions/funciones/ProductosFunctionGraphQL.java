@@ -11,6 +11,7 @@ import graphql.GraphQLContext;
 import graphql.Scalars;
 import graphql.schema.*;
 
+import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
@@ -268,10 +269,19 @@ public class ProductosFunctionGraphQL {
     private static long insertarProducto(String nombre, String descripcion, Integer precio, Logger log) throws Exception {
         String sql = "INSERT INTO PRODUCTO (NOMBRE, DESCRIPCION, PRECIO) VALUES (?, ?, ?)";
         try (Connection conn = open();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = conn.prepareStatement(sql, new String[]{"ID"})) { // <= mejor que RETURN_GENERATED_KEYS
+
             ps.setString(1, nombre);
             if (descripcion != null) ps.setString(2, descripcion); else ps.setNull(2, Types.VARCHAR);
-            if (precio != null) ps.setInt(3, precio); else ps.setNull(3, Types.NUMERIC);
+
+            if (precio != null) {
+                // si PRECIO es NUMBER(15,2) o NUMBER sin escala, BigDecimal es el mapeo correcto
+                ps.setBigDecimal(3, BigDecimal.valueOf(precio));
+            } else {
+                // DECIMAL/NUMERIC explícito
+                ps.setNull(3, Types.DECIMAL);
+            }
+
             ps.executeUpdate();
 
             try (ResultSet keys = ps.getGeneratedKeys()) {
